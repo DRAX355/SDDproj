@@ -1,0 +1,109 @@
+--- General / OS / IDE ---
+
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+.eslintcache
+*.log
+
+--- Root Level Dependencies ---
+
+node_modules/
+.pnp
+.pnp.js
+
+--- Backend (Python) ---
+
+backend/pycache/
+backend/.py[cod]
+backend/$py.class
+backend/venv/
+backend/env/
+backend/.env
+backend/.pytest_cache/
+backend/instance/
+backend/.coverage
+backend/htmlcov/
+.ipynb_checkpoints/
+pycache/
+
+--- Frontend (Node/React) ---
+
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+coverage/
+
+--- Datasets & Data Preparation ---
+
+dataset/
+dataset_prepared/
+backend/dataset/
+backend/dataset_prepared/
+
+--- Large Model Files ---
+
+Note: *.keras is NOT ignored here because we want to push it via LFS
+
+*.pt
+*.pth
+*.onnx
+*.tflite
+frontend/public/model/
+
+--- JSON Handling ---
+
+Ignore all JSONs by default (to avoid uploading massive dataset metadata)
+
+*.json
+
+--- WHITELIST (Files we WANT to keep) ---
+
+!package.json
+!package-lock.json
+!tsconfig.json
+!jsconfig.json
+!manifest.json
+!model.json
+
+Backend specific whitelist
+
+!backend/class_indices.json
+!backend/skin_disease_model.h5
+
+Frontend specific whitelist
+
+!frontend/package.json
+!frontend/package-lock.json
+!frontend/tsconfig.json
+!frontend/manifest.json
+
+--- Logs ---
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+--- Root Level Env ---
+
+.env
+
+package-lock.json
