@@ -1,180 +1,202 @@
 # Skin Disease Detection System 🩺
 
-A full-stack medical analysis application that detects 23 different types of skin diseases using Deep Learning.
+A full-stack medical analysis application that detects **13 different types of skin diseases** using Deep Learning. The project features a React.js frontend and a Python Flask backend hosting a **Multi-Model Ensemble AI** (EfficientNetB0, ResNet50, MobileNetV2) for high-accuracy predictions.
 
-This project consists of a React.js Frontend for the user interface and a Python Flask Backend that hosts the trained AI model.
+---
 
 ## 🌟 Features
 
-- **AI Analysis**: Detects 23 skin conditions (Acne, Melanoma, Eczema, etc.) with a custom trained MobileNetV2/EfficientNet model.
-- **Role-Based Access**: Dedicated dashboards for Patients (Upload & Scan) and Admins.
-- **Real-Time History**: Saves patient reports and diagnosis history locally.
-- **Secure Architecture**: Separation of concerns with a dedicated API server for AI processing.
-- **Responsive UI**: Built with Tailwind CSS to work on mobile and desktop.
+- **Ensemble AI Analysis** — A "Committee of Doctors" approach aggregating votes from EfficientNetB0, ResNet50, and MobileNetV2 to reduce false positives.
+- **13 Conditions Detected** — Covers Acne, Melanoma, Eczema, Psoriasis, and more.
+- **Role-Based Access** — Dedicated dashboards for Patients (Upload & Scan) and Admins.
+- **Real-Time History** — Saves patient reports and diagnosis history locally.
+- **Secure Architecture** — Separation of concerns with a dedicated Flask API server.
+- **Responsive UI** — Built with React & Tailwind CSS for mobile and desktop.
+
+---
 
 ## 📂 Project Structure
 
 ```
 skin-disease-project/
-├── backend/                   # 🐍 Python API Server
-│   ├── app.py                 # Flask Server (Entry Point)
-│   ├── skin_disease_model.h5  # The Trained AI Model
-│   ├── class_indices.json     # Class Labels (0 = Acne, etc.)
-│   └── requirements.txt       # Python Dependencies
+├── backend/                          # 🐍 Python API Server
+│   ├── app.py                        # Flask Server (Entry Point)
+│   ├── EfficientNetB0_13class.keras  # AI Model 1
+│   ├── ResNet50_13class.keras        # AI Model 2
+│   ├── MobileNetV2_13class.keras     # AI Model 3
+│   ├── class_indices.json            # Class Labels (0 = Acne, etc.)
+│   └── requirements.txt             # Python Dependencies
 │
-├── frontend/                  # ⚛️ React Application
-│   ├── src/                   # Source Code
-│   │   ├── pages/             # Dashboard & Auth Screens
-│   │   ├── config/            # Disease Info & Settings
+├── frontend/                         # ⚛️ React Application
+│   ├── src/
+│   │   ├── pages/                    # Dashboard & Auth Screens
+│   │   ├── config/                   # Disease Info & Settings
 │   │   └── ...
 │   └── ...
 │
-└── README.md                  # This file
+└── README.md
 ```
+
+---
 
 ## 🛠️ Prerequisites
 
-Before running the project, ensure you have the following installed:
+Ensure the following are installed before proceeding:
 
-- **Node.js** (v16 or higher) - [Download](https://nodejs.org/)
-- **Python** (v3.8 or higher) - [Download](https://www.python.org/)
-- **Git** - [Download](https://git-scm.com/)
+| Tool | Version | Link |
+|------|---------|------|
+| Node.js | v16+ | [Download](https://nodejs.org) |
+| Python | v3.8+ | [Download](https://python.org) |
+| Git | Latest | [Download](https://git-scm.com) |
+| Git LFS | Latest | [Download](https://git-lfs.github.com) |
+
+> **Git LFS is required** to download the AI model files.
+
+---
 
 ## 🚀 Installation Guide
 
-Follow these steps exactly to set up the project on your local machine.
-
-### Step 1: Clone the Repository
-
-Open your terminal (Command Prompt/PowerShell) and run:
+### Step 1 — Clone the Repository
 
 ```bash
-git clone https://github.com/DRAX#%%/skin-disease-detection.git
-cd skin-disease-detection
+git clone https://github.com/DRAX355/SDDproj.git
+cd SDDproj
 ```
 
-### Step 2: Setup Backend (The AI Server)
+Pull the large model files via Git LFS:
 
-The backend requires Python libraries to run the AI model.
+```bash
+git lfs install
+git lfs pull
+```
 
-1. Navigate to the backend folder and create venv:
-   ```bash
-   cd backend
-   ```
-   ```bash
-   python -m venv venv
-   ```
-   for cmd:
-   ```bash
-   venv\Scripts\activate
-   ```
-   for powershell:
-   ```bash
-   venv\Scripts\activate.ps1
-   ```
+---
 
-3. Install the required Python packages:
-   ```bash
-   pip install -r requirements.txt
-   ```
-   *(Note: This installs Flask, TensorFlow, Pillow, and NumPy)*
+### Step 2 — Setup Backend (AI Server)
 
-4. **CRITICAL: Verify the Model**
-   
-   Ensure that the file `skin_disease_model.h5` exists inside the `backend/` folder.
-   
-   If you cloned this repo and the file is missing (due to GitHub size limits), please download the model manually from [Your External Link] and place it in the `backend/` folder.
+Navigate to the backend folder and create a virtual environment:
 
-5. Start the Backend Server:
-   ```bash
-   python app.py
-   ```
+```bash
+cd backend
+python -m venv venv
+```
 
-✅ **Success**: You should see `Running on http://127.0.0.1:5000` and `Model loaded successfully!`.
+Activate the virtual environment:
 
-*(Keep this terminal window OPEN)*
+```bash
+# Windows (CMD)
+venv\Scripts\activate
 
-### Step 3: Setup Frontend (The User Interface)
+# Windows (PowerShell)
+venv\Scripts\activate.ps1
 
-Open a NEW terminal window (keep the backend running in the first one).
+# macOS / Linux
+source venv/bin/activate
+```
 
-1. Navigate to the frontend folder:
-   ```bash
-   cd frontend
-   ```
+Install dependencies:
 
-2. Install Node dependencies:
-   ```bash
-   npm install
-   ```
+```bash
+pip install -r requirements.txt
+```
 
-3. Start the Web App:
-   ```bash
-   npm run dev
-   ```
+> This installs Flask, TensorFlow, Pillow, and NumPy.
 
-✅ **Success**: You should see `Local: http://localhost:5173/`.
+**Verify model files** — ensure these files exist in `backend/` and are **larger than 10 MB** (not 1 KB LFS pointers):
+- `EfficientNetB0_13class.keras`
+- `ResNet50_13class.keras`
+- `MobileNetV2_13class.keras`
+
+Start the backend server:
+
+```bash
+python app.py
+```
+
+✅ **Success:** You should see `Running on http://127.0.0.1:5000` and `All models loaded successfully!`
+
+> Keep this terminal window **open**.
+
+---
+
+### Step 3 — Setup Frontend (User Interface)
+
+Open a **new terminal window** (keep the backend running in the first).
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+✅ **Success:** You should see `Local: http://localhost:5173/`
+
+---
 
 ## 🖱️ How to Use
 
-1. Open your browser and go to `http://localhost:5173`.
-2. Register a new account (Select "Patient" role).
-   - *Note: This is a demo app, so data is saved to your browser's Local Storage.*
-3. Go to the **Patient Dashboard**.
+1. Open your browser and go to **http://localhost:5173**
+2. Register a new account and select the **Patient** role.
+   > The app uses Local Storage for demo purposes.
+3. Navigate to the **Patient Dashboard**.
 4. Click **Upload Image** and select a photo of a skin condition.
 5. Click **Analyze Skin**.
-   - The frontend sends the image to your running Python backend.
-   - The backend processes it with the `.h5` model.
-6. The result (Diagnosis, Confidence, Treatment) appears on your screen.
+6. The frontend sends the image to the Flask backend, which runs it through all 3 models and calculates a weighted ensemble result.
+7. The **Diagnosis, Confidence Score, and Treatment** recommendation appear on screen.
 
-## 🧠 Supported Diseases (23 Classes)
+---
 
-The model is trained to identify the following conditions:
+## 🧠 Supported Conditions (13 Classes)
 
-- Acne and Rosacea
-- Actinic Keratosis
-- Atopic Dermatitis
-- Bullous Disease
-- Cellulitis
-- Eczema
-- Exanthems and Drug Eruptions
-- Hair Loss (Alopecia)
-- Herpes HPV and other STDs
-- Light Diseases and Pigmentation
-- Lupus and Connective Tissue
-- Melanoma Skin Cancer
-- Nail Fungus
-- Poison Ivy and Contact Dermatitis
-- Psoriasis
-- Scabies and Lyme Disease
-- Seborrheic Keratoses
-- Systemic Disease
-- Tinea Ringworm and Fungal
-- Urticaria Hives
-- Vascular Tumors
-- Vasculitis
-- Warts and Viral Infections
+| # | Condition |
+|---|-----------|
+| 1 | Acne and Rosacea |
+| 2 | Actinic Keratosis, Basal Cell Carcinoma, and other Malignant Lesions |
+| 3 | Atopic Dermatitis |
+| 4 | Bullous Disease |
+| 5 | Cellulitis, Impetigo, and other Bacterial Infections |
+| 6 | Eczema |
+| 7 | Exanthems and Drug Eruptions |
+| 8 | Hair Loss (Alopecia) and other Hair Diseases |
+| 9 | Herpes, HPV, and other STDs |
+| 10 | Melanoma Skin Cancer, Nevi, and Moles |
+| 11 | Nail Fungus and other Nail Disease |
+| 12 | Psoriasis, Lichen Planus, and related diseases |
+| 13 | Urticaria Hives |
+
+---
 
 ## ❓ Troubleshooting
 
-### 1. "Fetch Error" or "Network Error" when analyzing:
+**"Model not found" or "File too small" errors**
 
-- **Is the Backend running?** Check if the terminal running `python app.py` is still open.
-- **Is it running on port 5000?** The frontend expects `http://localhost:5000`.
+Git LFS did not download the actual model files. Run the following inside the repository folder:
 
-### 2. "Model not found" error in Backend terminal:
+```bash
+git lfs pull
+```
 
-- Make sure `skin_disease_model.h5` is strictly inside the `backend/` folder, not in a subfolder or outside it.
-- Make sure the filename matches exactly.
+Confirm the `.keras` files in `backend/` are **larger than 100 MB**.
 
-### 3. "Tailwind" or "PostCSS" errors in Frontend:
+---
 
-- If you see version errors, run: 
-  ```bash
-  npm install -D tailwindcss@3.4.17 postcss autoprefixer
-  ```
-  inside the `frontend` folder.
+**"Fetch Error" when analyzing an image**
+
+- Ensure the backend is still running (`python app.py` terminal is open).
+- Confirm Flask is running on port **5000**.
+
+---
+
+**Tailwind or PostCSS errors**
+
+Reinstall the Tailwind configuration:
+
+```bash
+npm install -D tailwindcss@3.4.17 postcss autoprefixer
+```
+
+---
 
 ## 📜 License
 
-This project is for educational and research purposes.
+This project is intended for **educational and research purposes only**.
