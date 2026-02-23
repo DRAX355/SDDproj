@@ -2,15 +2,34 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Upload, Search, Loader2, FileText, AlertCircle, CheckCircle, 
   Stethoscope, Calendar, MapPin, Mail, Download, 
-  AlertTriangle, Sparkles, BrainCircuit, ArrowRight, X, User 
+  AlertTriangle, Sparkles, BrainCircuit, ArrowRight, X, User, RefreshCw 
 } from 'lucide-react';
-import { mockDB } from '../utils/mockBackend';
-import { DISEASE_CLASSES } from '../config/diseases';
-import jsPDF from 'jspdf';
+
+// --- CANVAS PREVIEW COMPATIBILITY ---
+// The following imports have been replaced with inline mocks to allow the code 
+// to render in this preview environment. 
+// When copying back to VS Code, uncomment these and remove the mock data block below:
+// import { mockDB } from '../utils/mockBackend';
+// import { DISEASE_CLASSES } from '../config/diseases';
+// import jsPDF from 'jspdf';
+
+const mockDB = {
+  getUserReports: () => [],
+  getDoctors: () => [
+    { id: '1', name: 'Dr. Emily Chen', spec: 'Dermatologist', loc: 'Metro General Hospital' },
+    { id: '2', name: 'Dr. Marcus Johnson', spec: 'Dermatologist', loc: 'Skin Health Clinic' }
+  ],
+  addReport: async () => {},
+  bookAppointment: () => {}
+};
+
+const DISEASE_CLASSES = [];
+
+// ------------------------------------
 
 const GEMINI_API_KEY = ""; 
 
-export default function PatientDashboard({ user }) {
+export default function PatientDashboard({ user = { name: "Demo User", age: 30, gender: "Male", uid: "123" } }) {
   const [activeTab, setActiveTab] = useState('scan');
   
   // AI State
@@ -31,7 +50,7 @@ export default function PatientDashboard({ user }) {
   useEffect(() => {
     if (user?.uid) {
       setHistory(mockDB.getUserReports(user.uid));
-      setDoctors(mockDB.getDoctors()); // Load dynamic doctor list from Admin
+      setDoctors(mockDB.getDoctors());
     }
   }, [user]);
 
@@ -42,6 +61,17 @@ export default function PatientDashboard({ user }) {
       setPreview(URL.createObjectURL(file));
       setResult(null);
       setError(null);
+    }
+  };
+
+  // --- NEW: Reset Function ---
+  const resetScan = () => {
+    setImageFile(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
     }
   };
 
@@ -83,9 +113,13 @@ export default function PatientDashboard({ user }) {
         body: formData,
       });
 
-      if (!response.ok) throw new Error('AI Server Offline');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || 'Server returned an error');
+      }
+
       const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      if (data.error) throw new Error(data.message || data.error);
 
       // Get Advice
       let details = { info: "", treatment: "" };
@@ -102,7 +136,7 @@ export default function PatientDashboard({ user }) {
         );
         details = staticData 
           ? { info: staticData.info, treatment: staticData.treatment }
-          : { info: "Consult doctor.", treatment: "Medical advice recommended." };
+          : { info: "Consult your doctor for a detailed evaluation.", treatment: "Medical advice recommended." };
       }
 
       const report = {
@@ -111,7 +145,7 @@ export default function PatientDashboard({ user }) {
         confidence: data.confidence,
         symptoms: details.info,
         treatment: details.treatment,
-        patientDetails: user, // Attach full user profile
+        patientDetails: user,
         isGenerative,
         date: new Date().toLocaleDateString(),
         createdAt: new Date().toISOString()
@@ -122,7 +156,11 @@ export default function PatientDashboard({ user }) {
       setHistory(prev => [report, ...prev]);
 
     } catch (err) {
-      setError(err.message);
+      if (err.message === "Failed to fetch" || err.name === "TypeError") {
+        setError("AI Server is offline. Please make sure the Python backend is running.");
+      } else {
+        setError(err.message); 
+      }
     } finally {
       setAnalyzing(false);
     }
@@ -130,10 +168,14 @@ export default function PatientDashboard({ user }) {
 
   const generatePDF = () => {
     if (!result) return;
+    
+    // Fallback for canvas preview
+    alert("PDF functionality is mocked in the preview. Restore the jsPDF import locally to enable actual PDF generation.");
+    
+    /* // LOCAL PROJECT CODE TO RESTORE:
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     
-    // Header
     doc.setFillColor(16, 185, 129);
     doc.rect(0, 0, pageWidth, 40, 'F');
     doc.setTextColor(255);
@@ -142,7 +184,6 @@ export default function PatientDashboard({ user }) {
     doc.setFontSize(10);
     doc.text(`Date: ${result.date}`, 20, 30);
 
-    // Patient Info
     doc.setTextColor(0);
     doc.setFontSize(14);
     doc.text("Patient Profile", 20, 60);
@@ -157,14 +198,12 @@ export default function PatientDashboard({ user }) {
         doc.text(splitHist, 20, 102);
     }
 
-    // Results
     doc.setFontSize(14);
     doc.text("Analysis Results", 20, 130);
     doc.setFontSize(12);
     doc.text(`Condition: ${result.diagnosis}`, 20, 140);
     doc.text(`Confidence: ${result.confidence}%`, 20, 148);
 
-    // Details
     doc.setFontSize(11);
     doc.text("Symptoms:", 20, 165);
     const splitSym = doc.splitTextToSize(result.symptoms, pageWidth - 40);
@@ -176,6 +215,7 @@ export default function PatientDashboard({ user }) {
     doc.text(splitTreat, 20, y + 7);
 
     doc.save(`Report_${user.name}_${result.date}.pdf`);
+    */
   };
 
   const confirmBooking = () => {
@@ -194,7 +234,6 @@ export default function PatientDashboard({ user }) {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      {/* Tabs */}
       <div className="flex space-x-6 mb-8 border-b border-gray-200 pb-1">
         {['scan', 'doctors', 'history'].map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} className={`pb-3 px-2 font-semibold capitalize flex items-center gap-2 transition border-b-2 ${activeTab === tab ? 'text-emerald-600 border-emerald-600' : 'text-gray-500 border-transparent'}`}>
@@ -206,7 +245,6 @@ export default function PatientDashboard({ user }) {
         ))}
       </div>
 
-      {/* Profile Header */}
       <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl mb-8 flex items-center gap-4">
         <div className="bg-emerald-200 p-3 rounded-full text-emerald-800"><User size={24}/></div>
         <div>
@@ -215,20 +253,29 @@ export default function PatientDashboard({ user }) {
         </div>
       </div>
 
-      {/* SCANNER */}
       {activeTab === 'scan' && (
         <div className="grid md:grid-cols-2 gap-10 animate-in fade-in">
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">New Scan</h2>
-                {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-2"><AlertCircle size={20} />{error}</div>}
+                {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-2"><AlertCircle size={20} className="shrink-0" />{error}</div>}
                 
-                <div onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-2xl h-64 flex flex-col items-center justify-center cursor-pointer transition ${preview ? 'border-emerald-500' : 'border-gray-300 hover:bg-gray-50'}`}>
+                {/* Prevent click if analyzing */}
+                <div onClick={() => !analyzing && fileInputRef.current?.click()} className={`border-2 border-dashed rounded-2xl h-64 flex flex-col items-center justify-center cursor-pointer transition relative overflow-hidden ${preview ? 'border-emerald-500' : 'border-gray-300 hover:bg-gray-50'}`}>
                     {preview ? <img src={preview} className="h-full w-full object-contain" /> : <div className="text-center text-gray-400"><Upload className="mx-auto mb-2"/>Upload Image</div>}
                     <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
                 </div>
-                <button onClick={analyzeImage} disabled={!imageFile || analyzing} className="w-full mt-6 bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 disabled:bg-gray-200">
-                    {analyzing ? <Loader2 className="animate-spin mx-auto"/> : 'Analyze Now'}
-                </button>
+                
+                {/* --- NEW: Show Reset Button if Result OR Error Exists --- */}
+                {(!result && !error) ? (
+                    <button onClick={analyzeImage} disabled={!imageFile || analyzing} className="w-full mt-6 bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 disabled:bg-gray-200 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition">
+                        {analyzing && <Loader2 className="animate-spin h-5 w-5"/>}
+                        {analyzing ? 'Analyzing...' : 'Analyze Now'}
+                    </button>
+                ) : (
+                    <button onClick={resetScan} className="w-full mt-6 bg-emerald-100 text-emerald-800 py-4 rounded-xl font-bold hover:bg-emerald-200 transition flex items-center justify-center gap-2">
+                        <RefreshCw size={20}/> Scan Another Image
+                    </button>
+                )}
             </div>
 
             <div className="space-y-6">
@@ -242,8 +289,8 @@ export default function PatientDashboard({ user }) {
                         <div className="bg-emerald-50 p-4 rounded-xl mb-6"><h4 className="font-bold mb-2">Treatment</h4><p className="text-gray-600 text-sm">{result.treatment}</p></div>
                         
                         <div className="grid grid-cols-2 gap-4">
-                            <button onClick={generatePDF} className="border border-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 flex justify-center gap-2"><Download size={18}/> Report</button>
-                            <button onClick={() => setActiveTab('doctors')} className="bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 flex justify-center gap-2"><Stethoscope size={18}/> Doctor</button>
+                            <button onClick={generatePDF} className="border border-gray-300 py-3 rounded-xl font-bold hover:bg-gray-50 flex items-center justify-center gap-2"><Download size={18}/> Report</button>
+                            <button onClick={() => setActiveTab('doctors')} className="bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 flex items-center justify-center gap-2"><Stethoscope size={18}/> Doctor</button>
                         </div>
                     </div>
                 ) : (
@@ -253,7 +300,6 @@ export default function PatientDashboard({ user }) {
         </div>
       )}
 
-      {/* DOCTORS */}
       {activeTab === 'doctors' && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in">
             {doctors.map(doc => (
@@ -269,7 +315,6 @@ export default function PatientDashboard({ user }) {
         </div>
       )}
 
-      {/* HISTORY */}
       {activeTab === 'history' && (
         <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden">
             {history.map((h, i) => (
@@ -285,7 +330,6 @@ export default function PatientDashboard({ user }) {
         </div>
       )}
 
-      {/* BOOKING MODAL */}
       {bookingDoctor && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-white p-8 rounded-3xl max-w-sm w-full relative">
@@ -293,7 +337,7 @@ export default function PatientDashboard({ user }) {
                 <h3 className="text-xl font-bold mb-6 text-center">Book Appointment</h3>
                 <p className="text-center text-gray-500 mb-6">with {bookingDoctor.name}</p>
                 <input type="date" className="w-full px-4 py-3 rounded-xl border border-gray-300 mb-4" onChange={e => setBookingDate(e.target.value)} />
-                <button onClick={confirmBooking} className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold">Confirm</button>
+                <button onClick={confirmBooking} className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700">Confirm</button>
             </div>
         </div>
       )}
