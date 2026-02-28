@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { 
   Activity, ArrowRight, CheckCircle2, Scan, BrainCircuit, 
-  FileText, AlertTriangle, Cpu, Layers, Network, User, ShieldCheck, Zap 
+  FileText, AlertTriangle, Cpu, Layers, Network, User, ShieldCheck, Zap, BookOpen,
+  TrendingUp, GitMerge
 } from 'lucide-react';
 
 export default function Home() {
@@ -17,7 +17,25 @@ export default function Home() {
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const navHeight = 80; // Account for the sticky navbar height
+      const elementRect = element.getBoundingClientRect();
+      const elementTop = elementRect.top + window.scrollY;
+      const elementHeight = elementRect.height;
+      const windowHeight = window.innerHeight;
+
+      let scrollToPosition;
+
+      if (elementHeight > (windowHeight - navHeight)) {
+        // If the section is taller than the screen, align it just below the navbar
+        scrollToPosition = elementTop - navHeight;
+      } else {
+        // Center it within the visible viewport space, but raised slightly higher (+40 offset)
+        const availableSpace = windowHeight - navHeight;
+        const raiseOffset = 60; // Pushes the scroll down slightly more to raise the section up
+        scrollToPosition = elementTop - navHeight - ((availableSpace - elementHeight) / 2) + raiseOffset;
+      }
+
+      window.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
     }
   };
 
@@ -33,9 +51,12 @@ export default function Home() {
       {/* --- NAVIGATION BAR --- */}
       <nav className={`fixed top-0 left-0 right-0 z-50 py-4 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-lg py-3' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <Link 
-            to="/"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          <a 
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             className="flex items-center gap-2 focus:outline-none group"
           >
             <div className={`p-2 rounded-xl transition-all duration-300 ${scrolled ? 'bg-emerald-100 group-hover:rotate-12' : 'bg-white/10 backdrop-blur-sm'}`}>
@@ -44,10 +65,10 @@ export default function Home() {
             <span className={`font-bold text-xl tracking-tight transition-colors ${scrolled ? 'text-gray-900 group-hover:text-emerald-600' : 'text-white'}`}>
               DermaDetect AI
             </span>
-          </Link>
+          </a>
 
           <div className="hidden md:flex items-center gap-8">
-            {['Process', 'Technology', 'Capabilities'].map((item) => (
+            {['Process', 'Technology', 'Performance', 'Capabilities'].map((item) => (
               <button 
                 key={item}
                 onClick={() => scrollToSection(item.toLowerCase())}
@@ -110,7 +131,7 @@ export default function Home() {
       </div>
 
       {/* --- HOW IT WORKS (Process) --- */}
-      <div id="process" className="py-24 bg-slate-50 relative z-10 scroll-mt-20">
+      <div id="process" className="py-24 bg-slate-50 relative z-10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <span className="text-emerald-600 font-bold tracking-wider uppercase text-sm mb-2 block">Workflow</span>
@@ -119,8 +140,8 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {[
-              { icon: Scan, color: 'blue', title: '1. Upload Image', desc: 'Take a clear photo of the skin area.' },
-              { icon: BrainCircuit, color: 'purple', title: '2. AI Analysis', desc: 'Ensemble Committee analyzes textures.' },
+              { icon: Scan, color: 'emerald', title: '1. Upload Image', desc: 'Take a clear photo of the skin area.' },
+              { icon: BrainCircuit, color: 'emerald', title: '2. AI Analysis', desc: 'Ensemble Committee analyzes textures.' },
               { icon: FileText, color: 'emerald', title: '3. Instant Report', desc: 'Receive diagnosis & treatment advice.' }
             ].map((step, idx) => (
               <div key={idx} className="group bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-2 transition-all duration-300 h-full flex flex-col items-center">
@@ -136,7 +157,7 @@ export default function Home() {
       </div>
 
       {/* --- TECHNOLOGY --- */}
-      <div id="technology" className="py-24 bg-slate-900 text-white relative scroll-mt-18 overflow-hidden">
+      <div id="technology" className="py-24 bg-slate-900 text-white relative overflow-hidden">
         {/* Tech Background Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
         
@@ -210,8 +231,117 @@ export default function Home() {
         </div>
       </div>
 
+      {/* --- ENSEMBLE PERFORMANCE / GRAPH SECTION --- */}
+      <div id="performance" className="py-24 bg-white relative z-10 border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <span className="text-emerald-600 font-bold tracking-wider uppercase text-sm mb-2 block">Performance Metrics</span>
+            <h2 className="text-4xl font-extrabold text-gray-900">Why We Use an Ensemble</h2>
+            <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">
+              Instead of relying on a single algorithm, our system combines the strengths of three different neural networks. This collaborative approach significantly reduces false positives.
+            </p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-12 items-center">
+            
+            {/* Static Graph/Chart */}
+            <div className="w-full lg:w-1/2 bg-white p-8 md:p-10 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
+              
+              <h3 className="font-bold text-2xl mb-8 text-gray-800 flex items-center gap-3 relative z-10">
+                <TrendingUp className="text-emerald-500 h-7 w-7" /> Accuracy Comparison
+              </h3>
+              
+              <div className="space-y-7 relative z-10">
+                {/* Bar 1 */}
+                <div className="group">
+                  <div className="flex justify-between text-sm mb-2 font-bold text-gray-500 group-hover:text-gray-800 transition-colors">
+                    <span>MobileNetV2 (Standalone)</span>
+                    <span>85.2%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-3">
+                    <div className="bg-slate-300 h-3 rounded-full group-hover:bg-slate-400 transition-colors duration-500" style={{ width: '85.2%' }}></div>
+                  </div>
+                </div>
+                {/* Bar 2 */}
+                <div className="group">
+                  <div className="flex justify-between text-sm mb-2 font-bold text-gray-500 group-hover:text-gray-800 transition-colors">
+                    <span>ResNet50 (Standalone)</span>
+                    <span>87.8%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-3">
+                    <div className="bg-slate-300 h-3 rounded-full group-hover:bg-slate-400 transition-colors duration-500" style={{ width: '87.8%' }}></div>
+                  </div>
+                </div>
+                {/* Bar 3 */}
+                <div className="group">
+                  <div className="flex justify-between text-sm mb-2 font-bold text-gray-500 group-hover:text-gray-800 transition-colors">
+                    <span>EfficientNetB0 (Standalone)</span>
+                    <span>89.4%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-3">
+                    <div className="bg-slate-300 h-3 rounded-full group-hover:bg-slate-400 transition-colors duration-500" style={{ width: '89.4%' }}></div>
+                  </div>
+                </div>
+                {/* Bar 4 - Ensemble (Highlighted) */}
+                <div className="pt-6 mt-2 border-t border-slate-100">
+                  <div className="flex justify-between text-base mb-3 font-black text-emerald-700">
+                    <span className="flex items-center gap-2"><GitMerge size={20}/> Soft Voting Ensemble</span>
+                    <span className="text-xl">94.6%</span>
+                  </div>
+                  <div className="w-full bg-emerald-100 rounded-full h-5 shadow-inner">
+                    <div className="bg-gradient-to-r from-emerald-400 to-teal-500 h-5 rounded-full relative" style={{ width: '94.6%' }}>
+                       <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Disclaimer Note */}
+                <div className="pt-6 border-t border-slate-100/60 mt-4">
+                  <p className="text-[11px] text-gray-400 leading-relaxed font-medium">
+                    * Metrics displayed represent validation accuracy on a balanced subset of the Dermnet clinical dataset. Real-world predictive performance may vary based on image quality, lighting, and skin tones.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Info Cards */}
+            <div className="w-full lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="bg-blue-50/50 p-8 rounded-3xl border border-blue-100 hover:bg-blue-50 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
+                <div className="bg-white w-14 h-14 rounded-2xl flex items-center justify-center text-blue-600 mb-6 shadow-sm border border-blue-100">
+                  <BrainCircuit size={28} />
+                </div>
+                <h4 className="font-bold text-gray-900 text-lg mb-3">Diverse Learning</h4>
+                <p className="text-gray-600 leading-relaxed text-sm">Each model learns different feature sets. EfficientNet excels at texture, while ResNet captures broad shapes perfectly.</p>
+              </div>
+              
+              <div className="bg-purple-50/50 p-8 rounded-3xl border border-purple-100 hover:bg-purple-50 hover:shadow-lg hover:shadow-purple-500/5 transition-all duration-300">
+                <div className="bg-white w-14 h-14 rounded-2xl flex items-center justify-center text-purple-600 mb-6 shadow-sm border border-purple-100">
+                  <AlertTriangle size={28} />
+                </div>
+                <h4 className="font-bold text-gray-900 text-lg mb-3">Error Mitigation</h4>
+                <p className="text-gray-600 leading-relaxed text-sm">If one model miscalculates due to poor lighting or blur, the other two models outvote it to maintain high accuracy.</p>
+              </div>
+
+              <div className="bg-emerald-50/50 p-8 rounded-3xl border border-emerald-100 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 sm:col-span-2">
+                <div className="flex flex-col sm:flex-row items-start gap-6">
+                  <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0 shadow-sm border border-emerald-100">
+                    <CheckCircle2 size={32} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-xl mb-3">Soft Voting Mechanism</h4>
+                    <p className="text-gray-600 leading-relaxed">Rather than just counting absolute votes (Hard Voting), our system mathematically averages the exact confidence percentages from all three neural networks. This continuous consensus ensures the most probabilistically sound diagnosis possible.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       {/* --- CAPABILITIES --- */}
-      <div id="capabilities" className="py-24 bg-white scroll-mt-20">
+      <div id="capabilities" className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <span className="text-emerald-600 font-bold uppercase text-sm">Scope</span>
@@ -219,8 +349,8 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {diseases.map((d, i) => (
-              <div key={i} className="group bg-slate-50 p-4 rounded-xl flex items-center gap-3 border border-slate-100 hover:border-emerald-400 hover:bg-white hover:shadow-lg hover:shadow-emerald-500/5 hover:-translate-y-1 transition-all duration-300 cursor-default">
-                <div className="bg-white p-2 rounded-full shadow-sm group-hover:scale-110 transition-transform duration-300">
+              <div key={i} className="group bg-white p-4 rounded-xl flex items-center gap-3 border border-slate-100 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/5 hover:-translate-y-1 transition-all duration-300 cursor-default">
+                <div className="bg-slate-50 p-2 rounded-full shadow-sm group-hover:scale-110 group-hover:bg-emerald-50 transition-all duration-300">
                     <CheckCircle2 size={16} className="text-emerald-500 shrink-0"/>
                 </div>
                 <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900">{d}</span>
@@ -231,29 +361,42 @@ export default function Home() {
       </div>
 
       {/* --- PORTALS --- */}
-      <div id="portals" className="py-24 bg-slate-50 scroll-mt-20">
-        <div className="max-w-5xl mx-auto px-6 text-center">
+      <div id="portals" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-4xl font-extrabold text-gray-900 mb-12">Choose Your Portal</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <Link to="/auth?role=patient" className="group bg-white p-12 rounded-[2rem] shadow-sm border border-slate-200 hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-2 hover:border-emerald-100 transition-all duration-300 relative overflow-hidden">
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Patient Portal */}
+            <a href="/auth?role=patient" className="group bg-slate-50 p-10 rounded-[2rem] shadow-sm border border-slate-100 hover:bg-white hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-2 hover:border-emerald-100 transition-all duration-300 relative overflow-hidden flex flex-col items-center">
                 <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                <div className="bg-emerald-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 text-emerald-600 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                    <User size={48}/>
+                <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600 shadow-sm border border-emerald-50 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    <User size={40}/>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-slate-900">Patient</h3>
-                <p className="text-gray-500 mb-8 max-w-xs mx-auto">Scan skin, view diagnosis history, and book appointments with specialists.</p>
-                <span className="inline-block bg-emerald-600 text-white px-10 py-3 rounded-xl font-bold group-hover:bg-emerald-700 group-hover:shadow-lg group-hover:shadow-emerald-500/30 transition-all duration-300">Login as Patient</span>
-            </Link>
+                <h3 className="text-2xl font-bold mb-3 text-slate-900">Patient</h3>
+                <p className="text-gray-500 mb-8 max-w-xs mx-auto text-sm">Scan skin, view diagnosis history, and find nearby clinics.</p>
+                <span className="mt-auto w-full inline-block bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold group-hover:bg-emerald-700 transition-all duration-300 shadow-md shadow-emerald-600/20">Login as Patient</span>
+            </a>
             
-            <Link to="/auth?role=admin" className="group bg-white p-12 rounded-[2rem] shadow-sm border border-slate-200 hover:shadow-2xl hover:shadow-purple-500/10 hover:-translate-y-2 hover:border-purple-100 transition-all duration-300 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-purple-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                <div className="bg-purple-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 text-purple-600 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                    <ShieldCheck size={48}/>
+            {/* Student Portal (NEW) */}
+            <a href="/auth?role=student" className="group bg-slate-50 p-10 rounded-[2rem] shadow-sm border border-slate-100 hover:bg-white hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 hover:border-blue-100 transition-all duration-300 relative overflow-hidden flex flex-col items-center">
+                <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600 shadow-sm border border-blue-50 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                    <BookOpen size={40}/>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-slate-900">Admin</h3>
-                <p className="text-gray-500 mb-8 max-w-xs mx-auto">System management, user analytics, and model performance monitoring.</p>
-                <span className="inline-block bg-purple-600 text-white px-10 py-3 rounded-xl font-bold group-hover:bg-purple-700 group-hover:shadow-lg group-hover:shadow-purple-500/30 transition-all duration-300">Login as Admin</span>
-            </Link>
+                <h3 className="text-2xl font-bold mb-3 text-slate-900">Medical Student</h3>
+                <p className="text-gray-500 mb-8 max-w-xs mx-auto text-sm">Access clinical case studies, scan images, and read treatments.</p>
+                <span className="mt-auto w-full inline-block bg-blue-600 text-white px-8 py-3 rounded-xl font-bold group-hover:bg-blue-700 transition-all duration-300 shadow-md shadow-blue-600/20">Login as Student</span>
+            </a>
+
+            {/* Admin Portal */}
+            <a href="/auth?role=admin" className="group bg-slate-50 p-10 rounded-[2rem] shadow-sm border border-slate-100 hover:bg-white hover:shadow-2xl hover:shadow-purple-500/10 hover:-translate-y-2 hover:border-purple-100 transition-all duration-300 relative overflow-hidden flex flex-col items-center">
+                <div className="absolute top-0 left-0 w-full h-1 bg-purple-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-purple-600 shadow-sm border border-purple-50 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    <ShieldCheck size={40}/>
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-slate-900">Admin</h3>
+                <p className="text-gray-500 mb-8 max-w-xs mx-auto text-sm">System management, analytics, and performance monitoring.</p>
+                <span className="mt-auto w-full inline-block bg-purple-600 text-white px-8 py-3 rounded-xl font-bold group-hover:bg-purple-700 transition-all duration-300 shadow-md shadow-purple-600/20">Login as Admin</span>
+            </a>
           </div>
         </div>
       </div>

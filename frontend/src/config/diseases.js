@@ -1,25 +1,67 @@
 export const DISEASE_CLASSES = [
-    { name: 'Acne and Rosacea', info: 'Chronic inflammatory skin condition affecting the face.', treatment: 'Topical retinoids, antibiotics, or isotretinoin.' },
-    { name: 'Actinic Keratosis', info: 'Rough, scaly patch on skin caused by years of sun exposure.', treatment: 'Cryotherapy (freezing), topical chemotherapy, or photodynamic therapy.' },
-    { name: 'Atopic Dermatitis (Eczema)', info: 'Condition that makes skin red and itchy.', treatment: 'Moisturizers, topical corticosteroids, and avoiding triggers.' },
-    { name: 'Bullous Disease', info: 'A group of rare conditions that cause blisters on the skin.', treatment: 'Corticosteroids and immunosuppressive drugs.' },
-    { name: 'Cellulitis', info: 'Common, potentially serious bacterial skin infection.', treatment: 'Oral or intravenous antibiotics.' },
-    { name: 'Exanthems and Drug Eruptions', info: 'Widespread rash that can occur as a reaction to medication or infection.', treatment: 'Discontinue the causing drug; antihistamines for itching.' },
-    { name: 'Hair Loss (Alopecia)', info: 'Partial or complete absence of hair from areas of the body.', treatment: 'Minoxidil, finasteride, or immunotherapy depending on cause.' },
-    { name: 'Herpes HPV and other STDs', info: 'Viral infections causing sores or growths.', treatment: 'Antiviral medications (e.g., Acyclovir) or physical removal of warts.' },
-    { name: 'Light Diseases and Pigmentation', info: 'Disorders affecting skin color or sensitivity to light.', treatment: 'Sun protection, laser therapy, or bleaching creams.' },
-    { name: 'Lupus and Connective Tissue', info: 'Autoimmune disease where the immune system attacks its own tissues.', treatment: 'Sun protection, corticosteroids, and immunosuppressants.' },
-    { name: 'Melanoma Skin Cancer', info: 'The most serious type of skin cancer.', treatment: 'Surgical excision is the primary treatment; immunotherapy/chemotherapy for advanced cases.' },
-    { name: 'Nail Fungus', info: 'Fungal infection of the nail.', treatment: 'Oral antifungal drugs or medicated nail polish.' },
-    { name: 'Poison Ivy and Contact Dermatitis', info: 'Itchy rash caused by direct contact with a substance.', treatment: 'Calamine lotion, hydrocortisone cream, and oatmeal baths.' },
-    { name: 'Psoriasis', info: 'Skin cells build up and form scales and itchy, dry patches.', treatment: 'Topical corticosteroids, light therapy, and systemic medications.' },
-    { name: 'Scabies and Lyme Disease', info: 'Infestation by mites (scabies) or tick-borne illness (Lyme).', treatment: 'Permethrin cream for scabies; antibiotics for Lyme disease.' },
-    { name: 'Seborrheic Keratoses', info: 'Noncancerous skin growth that appears waxy or brown.', treatment: 'Usually no treatment needed unless irritated; can be removed by cryotherapy.' },
-    { name: 'Systemic Disease', info: 'Skin manifestations of internal systemic diseases.', treatment: 'Treatment focuses on the underlying internal condition.' },
-    { name: 'Tinea Ringworm and Fungal', info: 'Fungal infection forming a ring-shaped rash.', treatment: 'Antifungal creams, lotions, or powders.' },
-    { name: 'Urticaria Hives', info: 'Red, itchy welts that result from a skin reaction.', treatment: 'Antihistamines and identifying/avoiding triggers.' },
-    { name: 'Vascular Tumors', info: 'Abnormal growth of blood vessels in the skin.', treatment: 'Laser therapy, beta-blockers, or surgical removal.' },
-    { name: 'Vasculitis', info: 'Inflammation of the blood vessels.', treatment: 'Corticosteroids to reduce inflammation.' },
-    { name: 'Warts and Viral Infections', info: 'Small, grainy skin growths caused by human papillomavirus (HPV).', treatment: 'Salicylic acid, cryotherapy, or laser treatment.' },
-    { name: 'Vascular Lesions', info: 'Visible abnormalities of the skin and underlying tissues.', treatment: 'Laser therapy or sclerotherapy.' }
+    { 
+        name: 'Acne and Rosacea', 
+        info: 'Chronic inflammatory skin condition affecting the face.', 
+        treatment: 'Topical retinoids, antibiotics, or isotretinoin.' 
+    },
+    { 
+        name: 'Actinic Keratosis', 
+        info: 'Rough, scaly patch on skin caused by years of sun exposure. Includes Basal Cell Carcinoma and Malignant Lesions.', 
+        treatment: 'Cryotherapy (freezing), topical chemotherapy, or photodynamic therapy.' 
+    },
+    { 
+        name: 'Atopic Dermatitis', 
+        info: 'Condition that makes skin red and itchy. Often confused with general Eczema.', 
+        treatment: 'Moisturizers, topical corticosteroids, and avoiding triggers.' 
+    },
+    { 
+        name: 'Bullous Disease', 
+        info: 'A group of rare conditions that cause blisters on the skin.', 
+        treatment: 'Corticosteroids and immunosuppressive drugs.' 
+    },
+    { 
+        name: 'Cellulitis', 
+        info: 'Common, potentially serious bacterial skin infection including Impetigo.', 
+        treatment: 'Oral or intravenous antibiotics.' 
+    },
+    { 
+        name: 'Eczema', 
+        info: 'Condition that makes skin red, itchy, and inflamed.', 
+        treatment: 'Moisturizers, topical corticosteroids, and avoiding triggers.' 
+    },
+    { 
+        name: 'Exanthems and Drug Eruptions', 
+        info: 'Widespread rash that can occur as a reaction to medication or infection.', 
+        treatment: 'Discontinue the causing drug; antihistamines for itching.' 
+    },
+    { 
+        name: 'Hair Loss (Alopecia)', 
+        info: 'Partial or complete absence of hair from areas of the body, and other hair diseases.', 
+        treatment: 'Minoxidil, finasteride, or immunotherapy depending on cause.' 
+    },
+    { 
+        name: 'Herpes HPV and other STDs', 
+        info: 'Viral infections causing sores or growths.', 
+        treatment: 'Antiviral medications (e.g., Acyclovir) or physical removal of warts.' 
+    },
+    { 
+        name: 'Melanoma Skin Cancer', 
+        info: 'The most serious type of skin cancer. Also includes Nevi and Moles.', 
+        treatment: 'Surgical excision is the primary treatment; immunotherapy/chemotherapy for advanced cases.' 
+    },
+    { 
+        name: 'Nail Fungus', 
+        info: 'Fungal infection of the nail and other nail diseases.', 
+        treatment: 'Oral antifungal drugs or medicated nail polish.' 
+    },
+    { 
+        name: 'Psoriasis', 
+        info: 'Skin cells build up and form scales and itchy, dry patches. Includes Lichen Planus.', 
+        treatment: 'Topical corticosteroids, light therapy, and systemic medications.' 
+    },
+    { 
+        name: 'Urticaria Hives', 
+        info: 'Red, itchy welts that result from a skin reaction.', 
+        treatment: 'Antihistamines and identifying/avoiding triggers.' 
+    }
 ];

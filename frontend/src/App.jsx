@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Auth from './pages/Auth';
 import PatientDashboard from './pages/PatientDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import StudentDashboard from './pages/StudentDashboard'; // <-- NEW: Imported Student Dashboard
 
 // Split into a separate component to use 'useLocation' and 'useNavigate' hooks
 function AppContent() {
@@ -61,15 +62,25 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Home />} />
         
+        {/* Redirect logic updated to handle students */}
         <Route 
           path="/auth" 
-          element={!user ? <Auth onLogin={handleLoginSuccess} /> : <Navigate to={user.role.includes('admin') ? "/admin" : "/patient"} />} 
+          element={
+            !user ? <Auth onLogin={handleLoginSuccess} /> : 
+            <Navigate to={user.role === 'main_admin' || user.role === 'admin' ? "/admin" : user.role === 'student' ? "/student" : "/patient"} />
+          } 
         />
         
         {/* Protected Routes */}
         <Route 
           path="/patient" 
           element={user && user.role === 'patient' ? <PatientDashboard user={user} /> : <Navigate to="/auth" />} 
+        />
+
+        {/* --- NEW: Student Route --- */}
+        <Route 
+          path="/student" 
+          element={user && user.role === 'student' ? <StudentDashboard user={user} /> : <Navigate to="/auth" />} 
         />
         
         {/* Admin Route: allows both 'admin' and 'main_admin' */}

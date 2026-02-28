@@ -38,8 +38,8 @@ export default function Auth({ onLogin }) {
     setLoading(true);
     setError('');
 
-    // Phone & Data Validation for Patients
-    if (isRegistering && role === 'patient') {
+    // Phone & Data Validation for Patients/Students
+    if (isRegistering && (role === 'patient' || role === 'student')) {
         if (!formData.phone || formData.phone.length < 10) {
             setError("Please enter a valid phone number.");
             setLoading(false);
@@ -50,8 +50,9 @@ export default function Auth({ onLogin }) {
     try {
       let user;
       if (isRegistering) {
-        if (role !== 'patient') throw new Error("Admin accounts must be created by the System Administrator.");
-        user = await mockAuth.register({ ...formData, role: 'patient' });
+        if (role === 'admin') throw new Error("Admin accounts must be created by the System Administrator.");
+        // Create user as either 'patient' or 'student'
+        user = await mockAuth.register({ ...formData, role: role });
       } else {
         user = await mockAuth.login(formData.email, formData.password);
         
@@ -60,13 +61,21 @@ export default function Auth({ onLogin }) {
              throw new Error("Access Denied: You do not have admin privileges.");
         }
         if (role === 'patient' && user.role !== 'patient') {
-             throw new Error("Please use the Admin Portal.");
+             throw new Error("Please use the correct Portal.");
+        }
+        if (role === 'student' && user.role !== 'student') {
+             throw new Error("Access Denied: Student privileges required.");
         }
       }
       
-      const targetPath = (user.role === 'main_admin' || user.role === 'admin') ? '/admin' : '/patient';
+      // Determine Path Based on Role
+      const targetPath = (user.role === 'main_admin' || user.role === 'admin') 
+        ? '/admin' 
+        : user.role === 'student' 
+            ? '/student' 
+            : '/patient';
       
-      onLogin(user);
+      if (onLogin) onLogin(user);
       navigate(targetPath);
     } catch (err) {
       setError(err.message);
@@ -75,7 +84,8 @@ export default function Auth({ onLogin }) {
     }
   };
 
-  const color = role === 'admin' ? 'purple' : 'emerald';
+  // Color theme mapping based on role
+  const color = role === 'admin' ? 'purple' : role === 'student' ? 'blue' : 'emerald';
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 bg-${color}-50`}>
@@ -91,10 +101,10 @@ export default function Auth({ onLogin }) {
               <Activity className="h-12 w-12 text-white mx-auto mb-3" />
             </Link>
             <h2 className="text-3xl font-bold text-white capitalize">
-              {role === 'admin' ? 'Administrative' : 'Patient'} Access
+              {role === 'admin' ? 'Administrative' : role === 'student' ? 'Student' : 'Patient'} Access
             </h2>
             <p className="text-white/90 mt-2 text-sm">
-              {isRegistering ? 'Create your secure medical profile' : 'Secure System Login'}
+              {isRegistering ? 'Create your secure profile' : 'Secure System Login'}
             </p>
           </div>
         </div>
@@ -107,8 +117,8 @@ export default function Auth({ onLogin }) {
             {/* Login Fields */}
             {!isRegistering && (
               <>
-                <input required type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-opacity-50 outline-none transition bg-gray-50" style={{ '--tw-ring-color': `var(--${color}-500)` }} />
-                <input required type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-opacity-50 outline-none transition bg-gray-50" style={{ '--tw-ring-color': `var(--${color}-500)` }} />
+                <input required type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-${color}-500 focus:border-${color}-500 outline-none transition bg-gray-50`} />
+                <input required type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-${color}-500 focus:border-${color}-500 outline-none transition bg-gray-50`} />
                 
                 {role === 'admin' && (
                     <p className="text-xs text-center text-gray-400 mt-2">
@@ -118,23 +128,23 @@ export default function Auth({ onLogin }) {
               </>
             )}
 
-            {/* Registration Fields (Only for Patients) */}
+            {/* Registration Fields */}
             {isRegistering && (
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase ml-1">Account Info</label>
                   <div className="grid gap-3 mt-1">
-                    <input required type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-emerald-500" />
-                    <input required type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-emerald-500" />
-                    <input required type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-emerald-500" />
+                    <input required type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-${color}-500`} />
+                    <input required type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-${color}-500`} />
+                    <input required type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-${color}-500`} />
                   </div>
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase ml-1">Personal Details</label>
                   <div className="grid grid-cols-2 gap-3 mt-1">
-                    <input required type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-emerald-500" />
-                    <select name="gender" value={formData.gender} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-emerald-500">
+                    <input required type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-${color}-500`} />
+                    <select name="gender" value={formData.gender} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-${color}-500`}>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                       <option value="Other">Other</option>
@@ -142,14 +152,16 @@ export default function Auth({ onLogin }) {
                   </div>
                   <div className="mt-3 relative">
                     <Phone className="absolute left-4 top-3.5 text-gray-400" size={18}/>
-                    <input required type="tel" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-emerald-500" />
+                    <input required type="tel" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} className={`w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-${color}-500`} />
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Medical Profile</label>
-                  <textarea name="medicalHistory" placeholder="Known Allergies, Past Skin Conditions, Medications..." value={formData.medicalHistory} onChange={handleChange} className="w-full mt-1 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-emerald-500 h-24 resize-none" />
-                </div>
+                {role === 'patient' && (
+                    <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Medical Profile</label>
+                    <textarea name="medicalHistory" placeholder="Known Allergies, Past Skin Conditions, Medications..." value={formData.medicalHistory} onChange={handleChange} className={`w-full mt-1 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-${color}-500 h-24 resize-none`} />
+                    </div>
+                )}
               </div>
             )}
 
@@ -162,7 +174,7 @@ export default function Auth({ onLogin }) {
             </button>
           </form>
 
-          {role === 'patient' && (
+          {(role === 'patient' || role === 'student') && (
             <div className="mt-6 text-center">
               <button onClick={() => setIsRegistering(!isRegistering)} className={`text-${color}-600 font-medium text-sm hover:underline`}>
                 {isRegistering ? 'Already have an account? Sign In' : 'New here? Create an Account'}

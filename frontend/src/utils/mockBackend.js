@@ -1,4 +1,61 @@
-// A robust "Local Storage" database with Super Admin & Logging capabilities
+// ==========================================
+// 1. INDEXED-DB & IN-MEMORY CACHE
+// Solves the 5MB LocalStorage limit while keeping React synchronous!
+// ==========================================
+
+const imageCache = {}; // Holds images in memory for instant synchronous access
+
+const initDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("DermaDetectImagesDB", 1);
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains("images")) {
+        db.createObjectStore("images", { keyPath: "id" });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = (e) => reject(e);
+  });
+};
+
+// Pre-load all images into memory on startup so the UI doesn't have to wait
+const preloadCache = async () => {
+  try {
+    const db = await initDB();
+    const tx = db.transaction("images", "readonly");
+    const req = tx.objectStore("images").getAll();
+    req.onsuccess = () => {
+      if (req.result) {
+        req.result.forEach(row => {
+          imageCache[row.id] = row.data;
+        });
+      }
+    };
+  } catch(e) { console.error("Cache pre-load error:", e); }
+};
+preloadCache();
+
+export const localImageDB = {
+  saveImage: async (id, base64Data) => {
+    try {
+      imageCache[id.toString()] = base64Data; // Sync instantly to cache for immediate rendering
+      const db = await initDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction("images", "readwrite");
+        tx.objectStore("images").put({ id: id.toString(), data: base64Data });
+        tx.oncomplete = () => resolve(true);
+      });
+    } catch(e) { console.error("IndexedDB Save Error:", e); }
+  },
+  getImage: (id) => {
+    return imageCache[id.toString()] || null;
+  }
+};
+
+// ==========================================
+// 2. TEXT DATABASE & AUTH (LocalStorage)
+// ==========================================
 
 const MAIN_ADMIN = {
   uid: 'super_admin_001',
@@ -8,22 +65,16 @@ const MAIN_ADMIN = {
   role: 'main_admin'
 };
 
-const INITIAL_DOCTORS = [
-  { id: 1, name: "Dr. Sarah Johnson", spec: "Dermatologist", exp: "12 years", loc: "City Skin Clinic", avail: true },
-  { id: 2, name: "Dr. Michael Chen", spec: "Oncologist", exp: "18 years", loc: "General Hospital", avail: false },
-  { id: 3, name: "Dr. Emily Davis", spec: "Dermatopathologist", exp: "8 years", loc: "Westside Medical", avail: true },
-];
-
 // Helper to Log Actions (Audit Trail)
 const logAction = (action, actor, details) => {
   const logs = JSON.parse(localStorage.getItem('system_logs') || '[]');
   const newLog = {
     id: Date.now(),
     timestamp: new Date().toLocaleString(),
-    action, // e.g., "Added Doctor"
+    action, 
     actorName: actor?.name || 'Unknown',
     actorRole: actor?.role || 'system',
-    details // e.g., "Dr. Smith added"
+    details 
   };
   logs.unshift(newLog);
   localStorage.setItem('system_logs', JSON.stringify(logs));
@@ -33,13 +84,11 @@ export const mockAuth = {
   login: async (email, password) => {
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // 1. Check Hardcoded Main Admin
     if (email === MAIN_ADMIN.email && password === MAIN_ADMIN.password) {
       localStorage.setItem('currentUser', JSON.stringify(MAIN_ADMIN));
       return MAIN_ADMIN;
     }
 
-    // 2. Check Database Users (Patients & Sub-Admins)
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const user = users.find(u => u.email === email && u.password === password);
     
@@ -50,7 +99,6 @@ export const mockAuth = {
     throw new Error('Invalid email or password');
   },
 
-  // Registration (Patients Only via UI, Admins via Internal)
   register: async (details) => {
     await new Promise(resolve => setTimeout(resolve, 500));
     const users = JSON.parse(localStorage.getItem('users') || '[]');
@@ -60,7 +108,7 @@ export const mockAuth = {
     }
 
     if (users.find(u => u.email === details.email)) {
-      throw new Error('User already exists');
+      throw new Error('User already exists with this email address');
     }
     
     const newUser = { 
@@ -73,11 +121,10 @@ export const mockAuth = {
     localStorage.setItem('users', JSON.stringify(users));
     localStorage.setItem('currentUser', JSON.stringify(newUser));
     
-    logAction('New Registration', newUser, 'Patient joined the platform');
+    logAction('New Registration', newUser, `${details.role === 'student' ? 'Student' : 'Patient'} joined the platform`);
     return newUser;
   },
 
-  // Internal: Main Admin creates Sub-Admin
   createSubAdmin: (adminDetails, creator) => {
     if (creator.role !== 'main_admin') throw new Error("Unauthorized");
     
@@ -87,7 +134,7 @@ export const mockAuth = {
     const newAdmin = {
       uid: `admin_${Date.now()}`,
       ...adminDetails,
-      role: 'admin', // Sub-admin role
+      role: 'admin',
       createdAt: new Date().toISOString()
     };
 
@@ -97,7 +144,6 @@ export const mockAuth = {
     return newAdmin;
   },
 
-  // Internal: Main Admin deletes Sub-Admin
   deleteSubAdmin: (uid, creator) => {
     if (creator.role !== 'main_admin') throw new Error("Unauthorized");
     let users = JSON.parse(localStorage.getItem('users') || '[]');
@@ -121,100 +167,67 @@ export const mockAuth = {
 };
 
 export const mockDB = {
-  // --- LOGS ---
   getSystemLogs: (requestor) => {
-    // Only Main Admin can see full system logs
     if (requestor?.role !== 'main_admin') return [];
     return JSON.parse(localStorage.getItem('system_logs') || '[]');
   },
 
-  // --- REPORTS ---
+  // --- REPORTS WITH AUTO IMAGE STRIPPING ---
   addReport: async (userId, report) => {
     await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // 1. Clone the report so we don't accidentally mutate the React state
+    const reportToSave = { ...report };
+
+    // 2. Intercept the massive Base64 Image string
+    if (reportToSave.imageUrl) {
+        // Save the heavy image to the unrestricted IndexedDB
+        await localImageDB.saveImage(reportToSave.id, reportToSave.imageUrl);
+        reportToSave.imageId = reportToSave.id; // Keep a lightweight pointer
+        delete reportToSave.imageUrl; // DELETING THIS PREVENTS LOCAL STORAGE CRASHES!
+    }
+
+    // 3. Save the now-lightweight text report to Local Storage
     const key = `reports_${userId}`;
     const reports = JSON.parse(localStorage.getItem(key) || '[]');
-    reports.unshift(report);
+    reports.unshift(reportToSave);
     localStorage.setItem(key, JSON.stringify(reports));
     
     // Log this medical action
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const user = users.find(u => u.uid === userId);
     if (user) {
-        logAction('AI Scan', user, `Diagnosis: ${report.diagnosis} (${report.confidence}%)`);
+        logAction('AI Scan', user, `Diagnosis: ${reportToSave.diagnosis} (${reportToSave.confidence}%)`);
     }
   },
 
   getUserReports: (userId) => {
-    return JSON.parse(localStorage.getItem(`reports_${userId}`) || '[]');
-  },
-
-  // --- DOCTORS ---
-  getDoctors: () => {
-    const docs = localStorage.getItem('doctors');
-    if (!docs) {
-        localStorage.setItem('doctors', JSON.stringify(INITIAL_DOCTORS));
-        return INITIAL_DOCTORS;
-    }
-    return JSON.parse(docs);
-  },
-
-  addDoctor: (doctor, actor) => {
-    const docs = JSON.parse(localStorage.getItem('doctors') || JSON.stringify(INITIAL_DOCTORS));
-    const newDoc = { ...doctor, id: Date.now(), avail: true };
-    docs.push(newDoc);
-    localStorage.setItem('doctors', JSON.stringify(docs));
-    logAction('Doctor Added', actor, `Added Dr. ${doctor.name}`);
-    return docs;
-  },
-
-  removeDoctor: (id, actor) => {
-    let docs = JSON.parse(localStorage.getItem('doctors') || '[]');
-    const target = docs.find(d => d.id === id);
-    docs = docs.filter(d => d.id !== id);
-    localStorage.setItem('doctors', JSON.stringify(docs));
-    if (target) logAction('Doctor Removed', actor, `Removed Dr. ${target.name}`);
-    return docs;
-  },
-
-  // --- APPOINTMENTS ---
-  getAppointments: () => {
-    return JSON.parse(localStorage.getItem('all_appointments') || '[]');
-  },
-
-  bookAppointment: (appointment) => {
-    const apps = JSON.parse(localStorage.getItem('all_appointments') || '[]');
-    const newApp = { ...appointment, id: Date.now(), status: 'Pending' };
-    apps.unshift(newApp);
-    localStorage.setItem('all_appointments', JSON.stringify(apps));
+    const reports = JSON.parse(localStorage.getItem(`reports_${userId}`) || '[]');
     
-    // Log implicit action (Patient booking)
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const patient = users.find(u => u.uid === appointment.patientId);
-    if (patient) {
-        logAction('Appointment Booked', patient, `Booked with ${appointment.doctorName} on ${appointment.date}`);
-    }
-    return newApp;
-  },
-
-  updateAppointmentStatus: (id, status, actor) => {
-    const apps = JSON.parse(localStorage.getItem('all_appointments') || '[]');
-    const updatedApps = apps.map(app => {
-        if (app.id === id) {
-            logAction('Appointment Update', actor, `Changed status to ${status} for ${app.patientName}`);
-            return { ...app, status };
+    // Instantly stitch the images back together from our RAM cache
+    return reports.map(r => {
+        if (r.imageId && imageCache[r.imageId]) {
+            r.imageUrl = imageCache[r.imageId];
         }
-        return app;
+        return r;
     });
-    localStorage.setItem('all_appointments', JSON.stringify(updatedApps));
-    return updatedApps;
   },
   
   // --- USERS ---
+  
+  // Gets both Patients and Students for the Admin Dashboard
+  getAllUsers: () => {
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      return users.filter(u => u.role === 'patient' || u.role === 'student');
+  },
+
+  // Kept specifically for the Student Dashboard filtering logic
   getAllPatients: () => {
       const users = JSON.parse(localStorage.getItem('users') || '[]');
       return users.filter(u => u.role === 'patient');
   },
 
+  // Gets Sub-Admins for the Admin Dashboard Staff tab
   getAllAdmins: () => {
       const users = JSON.parse(localStorage.getItem('users') || '[]');
       return users.filter(u => u.role === 'admin');
