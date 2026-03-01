@@ -123,16 +123,27 @@ def predict():
         # 1. Preprocess
         processed_img = preprocess_image(image_bytes)
         
-        # 2. Ensemble Voting
-        # We collect probability lists from all 3 models
+        # 2. Ensemble Voting & Breakdown Collection
         all_probs = []
+        model_names = ['EfficientNet B0', 'ResNet 50', 'MobileNet V2']
+        model_breakdown = []
         
         for i, model in enumerate(models):
             preds = model.predict(processed_img, verbose=0)
             all_probs.append(preds[0])
+            
+            # Get individual prediction for the breakdown
+            m_idx = np.argmax(preds[0])
+            m_conf = float(preds[0][m_idx])
+            m_class = idx_to_class.get(m_idx, "Unknown")
+            
+            model_breakdown.append({
+                'model': model_names[i],
+                'diagnosis': m_class,
+                'confidence': round(m_conf * 100, 2)
+            })
 
         # 3. Average the Predictions (Soft Voting)
-        # This is where the magic happens: confident models overrule confused ones
         avg_pred = np.mean(all_probs, axis=0)
         
         # 4. Get Final Result
@@ -140,8 +151,7 @@ def predict():
         confidence = float(avg_pred[class_idx])
         predicted_class = idx_to_class.get(class_idx, "Unknown")
         
-        # --- NEW GATEKEEPER 2: CONFIDENCE THRESHOLD ---
-        # If the ensemble is completely confused and guessing (under 40% confidence)
+        # --- GATEKEEPER 2: CONFIDENCE THRESHOLD ---
         if confidence < 0.40:
             return jsonify({
                 'error': 'Uncertain Prediction',
@@ -151,7 +161,8 @@ def predict():
         return jsonify({
             'diagnosis': predicted_class,
             'confidence': round(confidence * 100, 2),
-            'method': f'Ensemble Consensus ({len(models)} models)'
+            'method': f'Ensemble Consensus ({len(models)} models)',
+            'breakdown': model_breakdown  # <--- NEW DATA ADDED HERE
         })
 
     except Exception as e:
