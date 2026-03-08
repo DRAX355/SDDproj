@@ -60,7 +60,7 @@ export default function Home() {
               <Activity className={`h-6 w-6 transition-colors duration-200 ${scrolled ? 'text-emerald-600' : 'text-white'}`} />
             </div>
             <span className={`font-bold text-xl tracking-tight transition-colors ${scrolled ? 'text-gray-900 group-hover:text-emerald-600' : 'text-white'}`}>
-              DermaDetect AI
+              DermaScan AI
             </span>
           </Link>
 
@@ -142,7 +142,7 @@ export default function Home() {
               <span className="text-emerald-400 font-bold tracking-wider uppercase text-sm mb-2 block">Technology</span>
               <h2 className="text-4xl font-extrabold mb-6">Powered by Ensemble AI</h2>
               <p className="text-gray-400 text-lg mb-10 leading-relaxed">
-                DermaDetect uses a "Committee of Doctors" approach. Three state-of-the-art models vote on every image to ensure maximum accuracy and reduce false positives.
+                DermaScan uses a "Committee of Doctors" approach. Three state-of-the-art models vote on every image to ensure maximum accuracy and reduce false positives.
               </p>
               <div className="space-y-4">
                 {[
@@ -321,9 +321,9 @@ export default function Home() {
       <footer className="bg-slate-950 text-slate-400 py-12 text-center border-t border-slate-900">
         <div className="flex items-center justify-center gap-2 mb-4 opacity-50 hover:opacity-100 transition-opacity duration-300">
             <Activity className="h-5 w-5"/>
-            <span className="font-bold text-lg text-slate-200">DermaDetect AI</span>
+            <span className="font-bold text-lg text-slate-200">DermaScan AI</span>
         </div>
-        <p className="text-sm">&copy; 2026 DermaDetect AI. All rights reserved.</p>
+        <p className="text-sm">&copy; 2026 DermaScan AI. All rights reserved.</p>
       </footer>
     </div>
   );

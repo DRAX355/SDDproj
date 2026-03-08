@@ -6,32 +6,8 @@ import {
 
 // === LOCAL DEVELOPMENT IMPORT ===
 // UNCOMMENT THIS LINE WHEN RUNNING ON YOUR LOCAL MACHINE:
-// import { mockDB, mockAuth } from '../utils/mockBackend';
+import { mockDB, mockAuth } from '../utils/mockBackend';
 
-// === CANVAS PREVIEW MOCKS ===
-// DELETE THIS ENTIRE BLOCK WHEN RUNNING LOCALLY
-const mockAuth = {
-  getCurrentUser: () => ({ role: 'main_admin', name: 'Demo Super Admin' }),
-  createSubAdmin: () => {},
-  deleteSubAdmin: () => {}
-};
-
-const mockDB = {
-  getAllUsers: () => [
-    { uid: 'p1', name: 'Alice Smith', age: 28, gender: 'Female', email: 'alice@email.com', phone: '555-0101', role: 'patient' },
-    { uid: 's1', name: 'James Carter', age: 24, gender: 'Male', email: 'j.carter@medschool.edu', phone: '555-0999', role: 'student' },
-    { uid: 'p2', name: 'Bob Jones', age: 45, gender: 'Male', email: 'bob@email.com', phone: '555-0102', role: 'patient' }
-  ],
-  getAllAdmins: () => [
-    { uid: 'a1', name: 'John Admin', email: 'admin@clinic.com', createdAt: new Date().toISOString() }
-  ],
-  getSystemLogs: () => [
-    { id: 1, timestamp: new Date().toLocaleString(), actorName: 'Alice Smith', actorRole: 'patient', action: 'AI Scan', details: 'Scanned image for Melanoma check (94.2%).' },
-    { id: 2, timestamp: new Date().toLocaleString(), actorName: 'James Carter', actorRole: 'student', action: 'Case Study View', details: 'Accessed Case ID #100234 details.' },
-    { id: 3, timestamp: new Date().toLocaleString(), actorName: 'Demo Super Admin', actorRole: 'main_admin', action: 'System Login', details: 'Authenticated successfully via secure portal.' }
-  ]
-};
-// ==================================
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(mockAuth.getCurrentUser());

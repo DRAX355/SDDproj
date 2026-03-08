@@ -338,7 +338,7 @@ export default function PatientDashboard({ user = { name: "Demo User", age: 30, 
       doc.rect(0, 0, pageWidth, 40, 'F');
       doc.setTextColor(255);
       doc.setFontSize(22);
-      doc.text("DermaDetect AI Report", 20, 25);
+      doc.text("DermaScan AI Report", 20, 25);
       doc.setFontSize(10);
       doc.text(`Date: ${result.date}`, 20, 32);
 
@@ -371,7 +371,7 @@ export default function PatientDashboard({ user = { name: "Demo User", age: 30, 
       const splitTreat = doc.splitTextToSize(result.treatment || "No treatment data available", pageWidth - 40);
       doc.text(splitTreat, 20, y + 7);
 
-      doc.save(`DermaDetect_Report_${user?.name?.replace(/\s+/g, '_') || 'Patient'}_${result.date.replace(/\//g, '-')}.pdf`);
+      doc.save(`DermaScan_Report_${user?.name?.replace(/\s+/g, '_') || 'Patient'}_${result.date.replace(/\//g, '-')}.pdf`);
     }
   };
 

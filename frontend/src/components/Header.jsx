@@ -7,7 +7,7 @@ export default function Header({ user, onLogout }) {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Activity className="h-8 w-8 text-emerald-100" />
-          <span className="font-bold text-xl tracking-tight">DermaDetect AI</span>
+          <span className="font-bold text-xl tracking-tight">DermaScan AI</span>
         </div>
         
         {user && (

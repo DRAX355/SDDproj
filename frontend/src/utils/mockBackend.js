@@ -7,7 +7,7 @@ const imageCache = {}; // Holds images in memory for instant synchronous access
 
 const initDB = () => {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("DermaDetectImagesDB", 1);
+    const request = indexedDB.open("DermaScanImagesDB", 1);
     request.onupgradeneeded = (e) => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains("images")) {
